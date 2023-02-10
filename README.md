@@ -5,6 +5,7 @@
 2. [React-commands](#react-commands)
 3. [Meet-React](#meet-react)
 4. [States](#states)
+5. [Effects](#effects)
 
 ## Intro
 * `Declarative` over `imperative`.
@@ -306,3 +307,84 @@ function App() {
 > We store state in one level and pass it around to other components where applicable to render the result we need.
 > In our latest todo-application, state is stored "globally" in the TodoApplication 
 > component and not just locally inside each of the child components.
+
+
+## Effects
+
+### Running effect on mount
+> Let's say we want to create a dropdown component that loads data from an external server to be displayed in the 
+> dropdown. We need to load this data as an effect, that runs on mount 
+> and then it shouldn't ever run again (because we already have the data).
+
+
+### Running effect on mount and cleanup on unmount
+> We have been tasked with creating a Stopwatch component. 
+> It should start an interval as soon as the component mounts, 
+> that just keep ticking up as time passes, but if the component is ever
+> unmounted in the future (because the user closes it for example), we must make sure to stop the interval again.
+> This requires an effect that runs on mount, but also runs a cleanup function on unmount.
+```javascript
+import { useState, useEffect } from 'react';
+function Stopwatch() {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(
+    () => {
+    const interval = setInterval(
+      () => setSeconds(seconds => seconds + 1),
+      1000,
+    );
+    return () => clearInterval(interval);
+  }, []);
+  return <h1>Seconds: {seconds}</h1>;
+}
+function App() {
+  const [showWatch, setShowWatch] = useState(false);
+  return (
+    <>
+      <button onClick={() => setShowWatch(b => !b)}>Toggle watch</button>
+      {showWatch && <Stopwatch />}
+    </>
+  );
+}
+export default App;
+```
+
+### Running an effect on some renders
+```javascript
+import { useEffect} from 'react';
+function BlogPost({ title, body }) {
+  useEffect(
+    () => {
+      document.title = title;
+    },
+    [title],
+  );
+  return (
+    <article>
+      <h1>{title}</h1>
+      {body}
+    </article>
+  );
+}
+```
+
+### Update from property
+```javascript
+import { useEffect, useState } from 'react';
+function EmailInput({ value }) {
+  const [email, setEmail] = useState();
+  useEffect(
+    () => setEmail(value),
+    [value],
+  );
+  return (
+    <label>
+      Email address
+      <input
+        type="email"
+        value={email}
+        onChange={(evt) => setEmail(evt.target.value)} />
+    </label>
+  );
+}
+```
